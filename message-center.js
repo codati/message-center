@@ -106,7 +106,8 @@ MessageCenterModule
           }
           else {
             this.mcMessages[0].message = message;
-
+            this.mcMessages[0].type = type;
+            this.mcMessages[0].options = angular.extend(this.mcMessages[0].options, options);
           }
         },
         flush: function () {
