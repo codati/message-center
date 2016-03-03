@@ -6,16 +6,16 @@ var MessageCenterModule = angular.module('MessageCenterModule', []);
 
 // Define a service to inject.
 MessageCenterModule
-  .provider("$messageCenterService", function() {
+  .provider("$messageCenterService", function () {
     var _this = this;
     _this.options = {};
-    _this.setGlobalOptions = function(options) {
+    _this.setGlobalOptions = function (options) {
       _this.options = options;
     }
-    _this.getOptions = function(options) {
+    _this.getOptions = function (options) {
       return _this.options;
     }
-    this.$get = function() {
+    this.$get = function () {
       return {
         setGlobalOptions: _this.setGlobalOptions,
         options: _this.options,
@@ -23,8 +23,8 @@ MessageCenterModule
       }
     }
   })
-  .service('messageCenterService', ['$rootScope', '$sce', '$timeout','$messageCenterService',
-    function ($rootScope, $sce, $timeout,$messageCenterService) {
+  .service('messageCenterService', ['$rootScope', '$sce', '$timeout', '$messageCenterService',
+    function ($rootScope, $sce, $timeout, $messageCenterService) {
       return {
         mcMessages: this.mcMessages || [],
         offlistener: this.offlistener || undefined,
@@ -37,7 +37,7 @@ MessageCenterModule
            * status, that will make the message available to the next page */
           next: 'next',
           /** @var Do not delete this message automatically. */
-          permanent: 'permanent'
+          permanent: 'permanent',
         },
         add: function (type, message, options) {
           var availableTypes = ['info', 'warning', 'danger', 'success'],
@@ -51,9 +51,10 @@ MessageCenterModule
             type: type,
             status: options.status || this.status.unseen,
             processed: false,
-            close: function() {
+            close: function () {
               return service.remove(this);
-            }
+            },
+            fixed: options.fixed || false,
           };
           messageObject.message = options.html ? $sce.trustAsHtml(message) : message;
           messageObject.html = !!options.html;
@@ -62,7 +63,12 @@ MessageCenterModule
               messageObject.close();
             }, options.timeout);
           }
-          this.mcMessages.push(messageObject);
+          if (options.fixed) {
+            this.mcMessages.unshift(messageObject);
+          }
+          else {
+            this.mcMessages.push(messageObject);
+          }
           return messageObject;
         },
         remove: function (message) {
@@ -92,6 +98,15 @@ MessageCenterModule
             }
           }
         },
+        addFixe: function (type, message) {
+          if (this.mcMessages.length == 0 || ! this.mcMessages[0].fixed ) {
+            this.add(type, message, {fixed : true })
+          }
+          else {
+            this.mcMessages[0].message = message;
+
+          }
+        },
         flush: function () {
           $rootScope.mcMessages = this.mcMessages;
         }
@@ -119,7 +134,7 @@ MessageCenterModule.
     return {
       restrict: 'EA',
       template: templateString,
-      link: function(scope, element, attrs) {
+      link: function (scope, element, attrs) {
         // Bind the messages from the service to the root scope.
         messageCenterService.flush();
         var changeReaction = function (event, to, from) {
