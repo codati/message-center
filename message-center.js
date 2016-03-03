@@ -98,9 +98,10 @@ MessageCenterModule
             }
           }
         },
-        addFixe: function (type, message) {
+        addFixe: function (type, message, options) {
           if (this.mcMessages.length == 0 || ! this.mcMessages[0].fixed ) {
-            this.add(type, message, {fixed : true })
+            options.fixed = true;
+            this.add(type, message,options )
           }
           else {
             this.mcMessages[0].message = message;
